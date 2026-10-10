@@ -27,7 +27,9 @@ echo "== installs"
 echo "== runtime"
 LLAMA_PORT=${LLAMA_PORT:-8080}; MCP_PORT=${MCP_PORT:-8090}
 curl -s --max-time 3 "http://127.0.0.1:$LLAMA_PORT/health" >/dev/null && ok "llama-server :$LLAMA_PORT" || warn "llama-server :$LLAMA_PORT not responding"
-curl -s --max-time 3 -o /dev/null "http://127.0.0.1:$MCP_PORT/mcp" && ok "mcp server :$MCP_PORT" || warn "mcp server :$MCP_PORT not responding"
+MCP_PATH=${MCP_PATH:-/mcp}
+CODE=$(curl -s --max-time 3 -o /dev/null -w '%{http_code}' "http://127.0.0.1:$MCP_PORT$MCP_PATH")
+[ "$CODE" != 000 ] && ok "mcp server :$MCP_PORT (http $CODE)" || warn "mcp server :$MCP_PORT not responding"
 
 echo "== summary: $PASS pass / $FAIL fail"
 exit "$FAIL"
