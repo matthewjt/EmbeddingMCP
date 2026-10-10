@@ -57,6 +57,11 @@ Vectors are L2-normalized → cosine similarity = dot product.
 - **Audio matching**: embed reference clips, match new clips;
   experimental — treat margins below ~0.1 as noise.
 
+- **Whole-document Q&A**: see README "Document pipeline" —
+  `src/ingest_book.py` (chunk+embed a book/article into SQLite) then
+  `src/query_book.py` (rank passages for a question). Verified on a
+  62k-word ebook: 173 chunks, chapter-labelled hits.
+
 ## Rules & gotchas
 
 - Call `embedding_health` first if any tool errors; distinguish

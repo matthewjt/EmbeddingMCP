@@ -129,11 +129,32 @@ rm -rf ~/.cache/huggingface/hub/models--unsloth--embeddinggemma-2-GGUF
 | Fewer vectors than texts sent | request >8 texts in one call — chunk to 8 |
 | Model pull fails | no HF reachability; pre-download on a networked box into `~/.cache/huggingface` |
 
+## Document pipeline (worked example: a whole book)
+
+Verified on a 62k-word .mobi ebook:
+
+```bash
+# 1. Extract text (mobi lib converts to EPUB; pandoc flattens it)
+python -c "import mobi; print(mobi.extract('book.mobi')[1])"   # -> .../book.html
+pandoc <extracted.html> -t plain --wrap=none -o book.txt
+# 2. Chunk (~400 words, 60-word overlap) + embed via MCP (batches of 8)
+pip install mobi numpy   # in the client venv
+python src/ingest_book.py book.txt book.db     # -> SQLite: chapter, text, vec
+# 3. Ask questions
+python src/query_book.py book.db "what topics does this book cover" 6
+```
+
+173 chunks ingested in ~40 s; retrieval returns ranked passages with
+chapter labels. Embeddings **find** the passages; the agent then reads
+them and answers. Chapter structure comes from the text itself
+(headings), not from vectors.
+
 ## Repo layout
 
 ```
 setup.sh doctor.sh run.sh .env.example README.md SKILL.md
 src/    server.py test_client.py bench.py retrieval_test.py
+        ingest_book.py query_book.py   (document pipeline)
 ops/    checksums.txt firewall.sh register-opencode.md
 state/  (gitignored: logs, pids, hw.json)
 ```
