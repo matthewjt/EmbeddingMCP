@@ -34,8 +34,7 @@ start_mcp() {
   EMBED_TRANSPORT=streamable-http EMBED_HOST="$MCP_HOST" EMBED_PORT="$MCP_PORT" EMBED_PATH="$MCP_PATH" \
     EMBED_BACKEND_URL="http://127.0.0.1:$LLAMA_PORT" \
     setsid bash -c "echo \$\$ > '$PWD/state/pids/mcp'; exec .venv/bin/python src/server.py >> '$PWD/state/mcp.log' 2>&1" </dev/null >/dev/null 2>&1 &
-  sleep 4
-  curl -s --max-time 3 -o /dev/null "http://127.0.0.1:$MCP_PORT$MCP_PATH" && { echo "mcp server up (:$MCP_PORT$MCP_PATH)"; return; }
+  for _ in $(seq 1 10); do curl -s --max-time 3 -o /dev/null "http://127.0.0.1:$MCP_PORT$MCP_PATH" && { echo "mcp server up (:$MCP_PORT$MCP_PATH)"; return; }; sleep 2; done
   echo "mcp server FAILED to start; see state/mcp.log"; return 1
 }
 
